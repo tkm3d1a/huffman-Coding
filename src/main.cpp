@@ -77,6 +77,23 @@ int main(int argc, char *argv[])
 
   cout << "\n\n" << textIn;
 
+  string testStringASCII, testStringChar;
+
+  for(int i = 0;i<128;i++){
+    char intToChar = i;
+    char intToProperChar = '1';
+    testStringASCII += intToChar;
+    testStringChar += intToProperChar;
+  }
+
+  outFile.open("./output.txt");
+  outFile << testStringASCII;
+  outFile.close();
+
+  outFile.open("./output2.txt");
+  outFile << testStringChar;
+  outFile.close();
+
   return 0;
 }
 /*************
