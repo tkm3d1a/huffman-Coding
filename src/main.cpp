@@ -143,13 +143,13 @@ void encode(Node* root, string input, unordered_map<char, string> &huffmanCode){
     huffmanCode[root->character] = input;
   }
 
-  encode(root->left, input + "0", huffmanCode);
-  encode(root->right, input + "1", huffmanCode);
+  encode(root->left, input + "1", huffmanCode);
+  encode(root->right, input + "0", huffmanCode);
 
 }
 
 void decode(){
-
+  //need to devolp own decode section
 }
 
 void buildTree(string textToCode){
@@ -184,4 +184,5 @@ void buildTree(string textToCode){
 	for (auto pair: huffmanCode) {
 		cout << pair.first << " " << pair.second << '\n';
 	}
+  //Tree built after here, need to start rest of work now
 }
