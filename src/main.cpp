@@ -70,48 +70,43 @@ void buildTree(string textToCode);
 *************/
 int main(int argc, char *argv[])
 {
-  // ifstream inFile;
-  // ofstream outFile;
+  ifstream inFile;
+  ofstream outFile;
   // //string flag = argv[1];
   // string inputFile = argv[1]; //#TODO need to update or remove hardcoding when done testing #TODO
   // //string outputFile = argv[2];
   // cout << endl << "Input file location: " << inputFile << "\n\n";
+  string fileName = "./output/testTextWithBin.txt";
 
-  // string textIn;
-  // int charCount = 0;
-  // char testChar = '\xff'; //hex for 1111 or 32 ?? STILL IN PROGRESS TESTING
+  string textTest = "Hello";
+  int charCount = 0;
+  char testChar = '\xaa';
+  char testChar2 = '\x99'; //hex for 1111 or 32 ?? STILL IN PROGRESS TESTING
+  
+  outFile.open(fileName, ofstream::binary); //Testing shows the ofstream::binary call is required to not add additional bytes to output stream
+  // outFile << textTest;
+  outFile << testChar << testChar2 << testChar2 << testChar;
+  outFile.close();
 
-  // inFile.open(inputFile, ifstream::binary); //path must be relative to .exe file location
+  inFile.open(fileName, ifstream::binary); //path must be relative to .exe file location
+  string textIn;
+  //textIn += inFile.get(); charCount++;
 
-  // textIn += inFile.get(); charCount++;
+  while(inFile.good()){
+    //cout << inChar;
+    textIn += (int) inFile.get(); charCount++; //I get different counts with each "return" used in the .txt file (+2 for each return)
+  }
+  inFile.close();
 
-  // while(inFile.good()){
-  //   //cout << inChar;
-  //   cout << charCount << " ";
-  //   textIn += inFile.get(); charCount++; //I get different counts with each "return" used in the .txt file (+2 for each return)
-  // }
+  cout << endl << textIn << endl << endl;
 
-  // cout << "\n\n" << textIn;
+  for(int i = 0; i < textIn.length();i++) {
+    cout << hex << (int) textIn[i] << " "; //this gives both a lot of leading 'f' and a EOF character of all f's at the end as well.  Need to investigate more
+  }
 
-  // string testStringASCII, testStringChar;
 
-  // for(int i = 0;i<128;i++){
-  //   char intToChar = i;
-  //   char intToProperChar = '1';
-  //   testStringASCII += intToChar;
-  //   testStringChar += intToProperChar;
-  // }
-
-  // outFile.open("./output.txt");
-  // outFile << testStringASCII;
-  // outFile.close();
-
-  // outFile.open("./output2.txt");
-  // outFile << testStringChar;
-  // outFile.close();
-
-  cout << endl;
-  buildTree("aabbccddeeeeefffff");
+  // cout << endl;
+  // buildTree("aabbccddeeeeefffff");
 
   return 0;
 }
