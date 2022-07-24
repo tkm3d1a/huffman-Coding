@@ -64,7 +64,7 @@ struct compareOR{
 Node* makeNode(char c, int freq, Node* left, Node* right);
 void encode(Node* root, string input, unordered_map<char, string> &huffmanCode);
 void decode(Node* root, int &index, string output); //will need to modify for my use
-void buildTree(string textToCode);
+unordered_map<char, string> buildTree(string textToCode);
 
 
 /*************
@@ -74,40 +74,54 @@ int main(int argc, char *argv[])
 {
   ifstream inFile;
   ofstream outFile;
+  unordered_map<char, string> huffCode;
   // //string flag = argv[1];
   // string inputFile = argv[1]; //#TODO need to update or remove hardcoding when done testing #TODO
   // //string outputFile = argv[2];
   // cout << endl << "Input file location: " << inputFile << "\n\n";
-  string fileName = "./output/testTextWithBin.txt";
+  string fileName = "./input/asciiArtTest.txt";
+  string outFileName = "./output/encodedTest.txt";
 
-  string textTest = "Hello";
-  int charCount = 0;
-  char testChar = '\xaa';
-  char testChar2 = '\x99'; //hex for 1111 or 32 ?? STILL IN PROGRESS TESTING
-  char testChar3 = 1;
-  
-  outFile.open(fileName, ofstream::binary);
-  outFile.close();
-
-  inFile.open(fileName, ifstream::binary); //path must be relative to .exe file location
+  inFile.open(fileName, iostream::binary); //path must be relative to .exe file location
   string textIn;
   //textIn += inFile.get(); charCount++;
+  int charCount = 0;
 
   inFile.seekg(0, inFile.end); //This is for getting file size. REFACTOR
   long fileSize = inFile.tellg();
   inFile.seekg(0);
 
   while(inFile.good()){
-    textIn += (int) inFile.get(); charCount++; //I get different counts with each "return" used in the .txt file (+2 for each return)
+    textIn += inFile.get(); 
+    charCount++; //I get different counts with each "return" used in the .txt file (+2 for each return)
   }
   inFile.close();
 
   //cout << endl << textIn << endl << endl;
   cout << "File size: " << fileSize << endl;
-  for(int i = 0; i < fileSize;i++) {
-    cout << hex << (int) (unsigned char) textIn[i] << " "; //this removes leading 'f's and the EOF chain of f's as well
+  cout << "Char count: " << charCount << endl;
+  cout << textIn;
+  // for(int i = 0; i < fileSize;i++) {
+  //   cout << hex << (int) (unsigned char) textIn[i] << " "; //this removes leading 'f's and the EOF chain of f's as well
+  // }
+  cout << "\n\n";
+  huffCode = buildTree(textIn);
+  cout << "\n\n";
+  string huffCoddedString = "";
+
+  for(int i = 0; i < fileSize;i++){
+    char tempChar = textIn[i];
+    string tempString = huffCode[tempChar];
+
+    huffCoddedString += tempString;
   }
 
+  cout << huffCoddedString;
+  outFile.open(outFileName);
+  //outFile.write(huffCoddedString, )
+  outFile << huffCoddedString;
+  outFile.close();
+  
   return 0;
 }
 /*************
@@ -147,7 +161,7 @@ void decode(){
   //need to devolp own decode section
 }
 
-void buildTree(string textToCode){
+unordered_map<char, string> buildTree(string textToCode){
 
   unordered_map<char, int> freqMap;
 
@@ -181,5 +195,7 @@ void buildTree(string textToCode){
 	for (auto pair: huffmanCode) {
 		cout << pair.first << " " << pair.second << '\n';
 	}
+
+  return huffmanCode;
   //Tree built after here, need to start rest of work now
 }
