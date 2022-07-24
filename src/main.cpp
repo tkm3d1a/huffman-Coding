@@ -5,7 +5,7 @@
   completed and called using the -huff and -unhuff flag at runtime
 * Due Date: 2022/08/01
 * Date Created: 2022/07/20
-* Date Last Modified: 2022/07/20
+* Date Last Modified: 2022/07/24
 */
 
 /*
@@ -20,6 +20,7 @@
  
 /*includes*/
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <ostream>
 #include <string>
@@ -37,7 +38,8 @@ struct Node{
 
   char character;
   int freq;
-  Node *left, *right;
+  Node *left;
+  Node *right;
 
 };
 
@@ -82,31 +84,29 @@ int main(int argc, char *argv[])
   int charCount = 0;
   char testChar = '\xaa';
   char testChar2 = '\x99'; //hex for 1111 or 32 ?? STILL IN PROGRESS TESTING
+  char testChar3 = 1;
   
-  outFile.open(fileName, ofstream::binary); //Testing shows the ofstream::binary call is required to not add additional bytes to output stream
-  // outFile << textTest;
-  outFile << testChar << testChar2 << testChar2 << testChar;
+  outFile.open(fileName, ofstream::binary);
   outFile.close();
 
   inFile.open(fileName, ifstream::binary); //path must be relative to .exe file location
   string textIn;
   //textIn += inFile.get(); charCount++;
 
+  inFile.seekg(0, inFile.end); //This is for getting file size. REFACTOR
+  long fileSize = inFile.tellg();
+  inFile.seekg(0);
+
   while(inFile.good()){
-    //cout << inChar;
     textIn += (int) inFile.get(); charCount++; //I get different counts with each "return" used in the .txt file (+2 for each return)
   }
   inFile.close();
 
-  cout << endl << textIn << endl << endl;
-
-  for(int i = 0; i < textIn.length();i++) {
-    cout << hex << (int) textIn[i] << " "; //this gives both a lot of leading 'f' and a EOF character of all f's at the end as well.  Need to investigate more
+  //cout << endl << textIn << endl << endl;
+  cout << "File size: " << fileSize << endl;
+  for(int i = 0; i < fileSize;i++) {
+    cout << hex << (int) (unsigned char) textIn[i] << " "; //this removes leading 'f's and the EOF chain of f's as well
   }
-
-
-  // cout << endl;
-  // buildTree("aabbccddeeeeefffff");
 
   return 0;
 }
@@ -163,8 +163,10 @@ void buildTree(string textToCode){
   }
 
   while(pQueue.size() > 1){
-    Node *leftOne = pQueue.top(); pQueue.pop();
-    Node *rightZero = pQueue.top(); pQueue.pop();
+    Node *leftOne = pQueue.top(); 
+    pQueue.pop();
+    Node *rightZero = pQueue.top(); 
+    pQueue.pop();
 
     int freqSum = leftOne->freq + rightZero->freq;
     pQueue.push(makeNode('\0', freqSum, leftOne, rightZero));
