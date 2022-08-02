@@ -11,17 +11,18 @@ void Huffman::doEncode()
 
 void Huffman::doDecode()
 {
-  getInputText();
-  getUID();
+  //std::cout<<"\nEnter...";
+  getInputText(); //std::cout<<"Exit getInputText()...\n";
+  getUID(); //std::cout<<"Exit getUID()...\n";
   if (!checkUID()) {
     //std::cout << "\nUID of file does not match.  exiting program.\n";
     return;
   }
-  getTreeSize();
-  getHuffTree();
-  getBufferZeros();
-  getInputMessage();
-  createOutput();
+  getTreeSize(); //std::cout<<"Exit getTreeSize()...\n";
+  getHuffTree(); //std::cout<<"Exit getHuffTree()...\n";
+  getBufferZeros(); //std::cout<<"Exit getBufferZeros()...\n";
+  getInputMessage(); //std::cout<<"Exit getInputMessage()...\n";
+  createOutput(); //std::cout<<"Exit createOutput()...\n";
 }
 
 /* Node creation */
@@ -72,16 +73,37 @@ void Huffman::getInputText()
 {
   unsigned char tempChar;
   if (this->flag == "-unhuff") {
+    std::cout<<"\nReading file...\n";
     inFile.open(this->inFileName, std::ios::in | std::ios::binary);
+
+    inFile.seekg (0, inFile.end);
+    int length = inFile.tellg();
+    inFile.seekg (0, inFile.beg);
+    this->inFileText.reserve(length);
+    
+    inFile.seekg(0);
+
     unsigned char nextChar;
     inFile.read(reinterpret_cast<char*>(&nextChar), 1);
     while (!inFile.eof()) {
       this->inFileText += nextChar;
       inFile.read(reinterpret_cast<char*>(&nextChar), 1);
     }
+    
   }
   else {
+    std::cout<<"\nReading file...\n";
     inFile.open(this->inFileName, std::ios::binary);
+
+    inFile.seekg (0, inFile.end);
+    int length = inFile.tellg();
+    inFile.seekg (0, inFile.beg);
+
+    this->inFileText.reserve(length);
+    this->outFileText.reserve(length);
+
+    inFile.seekg(0);
+
     tempChar = inFile.get();
     while (!inFile.eof()) {
       this->inFileText += tempChar;
@@ -90,6 +112,7 @@ void Huffman::getInputText()
   }
 
   inFile.close();
+  std::cout<<"File read\n";
 
 }
 
@@ -162,6 +185,7 @@ void Huffman::traverse(Node* entry, std::string code)
 
 void Huffman::createEncodedString()
 {
+  std::cout<<"\nEncoded string start\n";
   std::string encodedMsgLong;
   std::string tempMsg;
 
@@ -185,25 +209,38 @@ void Huffman::createEncodedString()
 
   tempMsg += (char)huffCodeToDec(encodedMsgLong);
 
-
+  
   this->bufferZeros += (char)zeroPadCount; //bufferzeros saving
   this->encodedMessage = tempMsg; //encoded message saving
+  std::cout<<"\nEncoded string end\n";
 }
 
 void Huffman::createEncodedTree()
 {
+  //std::cout<<"\nEncoded Tree start\n";
   std::string temp = "";
   std::string interiorTemp;
 
+  //unsure if string reserves needed.  Will leave in for now.
+  //Real issue seems to be the code bit length, need to find possible work around?
+  temp.reserve(this->inFileText.length());
+  interiorTemp.reserve(this->inFileText.length());
+  this->encodedTree.reserve(this->inFileText.length());
+
   char treeSize = (char) this->huffMap.size();
   this->encodedTree += treeSize;
+  
+  //std::cout<<"\npoint 1\n";
 
   for (auto pair : huffMap) {
     char data = pair.first;
     temp += data;
 
+    //std::cout<<"Pair.first: "<<pair.first<<" -- Pair.second: "<<pair.second<<"\n";
+
     std::string code = pair.second;
-    int padding = 15 - code.length();
+    int padding = 15 - static_cast<int>(code.length()); //String errors occur here if code length exceeds 15 bits.
+    //Tried bumping to allow for 23 bit code lengths but could not figure out seg faults that were occuring.
     interiorTemp.append(padding, '0');
     interiorTemp += '1';
     interiorTemp += code;
@@ -213,8 +250,9 @@ void Huffman::createEncodedTree()
     temp += (char)huffCodeToDec(interiorTemp);
     interiorTemp.clear();
   }
-
+  //std::cout<<"\npoint 2\n";
   this->encodedTree += temp;
+  //std::cout<<"\nEncoded Tree end\n";
 
 }
 
@@ -254,15 +292,17 @@ void Huffman::getHuffTree()
   int bytesToRead = this->huffMapSize * 3;
   this->trimSize = this->UIDSize + 1 + bytesToRead; //trimsize should equal 4 + 1 + mapsize*3
   char tempChar;
-  std::string tempPath, tempString;
+  std::string tempString;
   this->root = makeNewNode('\0', 0);
 
   for (int i = this->UIDSize+1; i < bytesToRead+5; ) {
     tempChar = this->inFileText[i]; i++;
 
     tempString += charDectoHuffCode((unsigned char) this->inFileText[i]); i++;
-    tempString += charDectoHuffCode((unsigned char) this->inFileText[i]); i++; //temp string has 2 bytes for path of char
-    //temp string should be 2 bytes "00000000 00101011" like this
+    tempString += charDectoHuffCode((unsigned char) this->inFileText[i]); i++;
+    //tempString += charDectoHuffCode((unsigned char) this->inFileText[i]); i++;
+    //temp string has 3 bytes for path of char
+    //temp string should be 3 bytes "00000000 00000000 00101011" like this
     //leading zeros and first '1' are garbage, then read path after
     int j = 0;
     while (tempString[j] == '0') { //count padding 0's
@@ -280,16 +320,18 @@ void Huffman::getHuffTree()
 
 void Huffman::getBufferZeros()
 {
-  this->numBuffZeros = inFileText.back();
-  inFileText.pop_back();
+  this->numBuffZeros = this->inFileText.back();
+  this->inFileText.pop_back();
 }
 
-void Huffman::getInputMessage()
+void Huffman::getInputMessage() //after changing to huff code being 4 bytes, have seg fault here...
 {
   std::string tempPath;
   Node* current = root;
+  //std::cout<<"Outside for loop...\n";
   for (int i = 0; i < this->inFileText.size(); i++) {
     tempPath = charDectoHuffCode((unsigned char)this->inFileText[i]);
+    //std::cout<<"tempPath: "<<tempPath<<"\n";
 
     if (i == this->inFileText.size() - 1) {
       tempPath = tempPath.substr(0, 8 - this->numBuffZeros);
@@ -298,12 +340,15 @@ void Huffman::getInputMessage()
     for (int j = 0; j < tempPath.size(); j++) {
       if (tempPath[j] == '0') {
         current = current->left;
+        //std::cout<<"Went left... " << current << "\n";
       }
       else {
         current = current->right;
+        //std::cout<<"Went right... " << current << "\n";
       }
 
       if (current->left == nullptr && current->right == nullptr) {
+        //std::cout<<"At leaf\n";
         this->outFileText += current->data;
         current = root;
       }
