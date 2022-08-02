@@ -61,7 +61,7 @@ struct compareOR{
 * precondition: 
 * postcondition: 
 */
-Node* makeNode(char c, int freq, Node* left, Node* right);
+Node* makeNode(char c, int freq, Node* left, Node* right);\
 void encode(Node* root, string input, unordered_map<char, string> &huffmanCode);
 void decode(Node* root, int &index, string output); //will need to modify for my use
 unordered_map<char, string> buildTree(string textToCode);
