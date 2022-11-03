@@ -1,3 +1,6 @@
+# **DEPRECATED**
+This repo is deprecated, will not add to it.  All DSA work was moved to single repo.  HuffmanCoding file will be maintained [here](https://github.com/tkm3d1a/DSA-Foundations/tree/main/Huffman-coding)
+
 # Huffman Coding
 
 Author: Tim Klimpel
